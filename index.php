@@ -40,7 +40,7 @@ $app->get('/', function() use ($app) {
 });
 
 $app->get('/tickets/', function() use ($app) {
-    return $app['github']->getIssues();
+    return getHackdayResponse($app['github']->getIssues());
 });
 
 $app->post('/tickets/', function(Request $r) use ($app) {
@@ -49,7 +49,7 @@ $app->post('/tickets/', function(Request $r) use ($app) {
             return new Response('', 201, array('Location' => "http://{$_SERVER['HTTP_HOST']}/tickets/$number"));
         }
     } catch (\InvalidArgumentException $e) {
-        return new Response('Invalid payload', 400);
+        return new Response($e->getMessage(), 400);
     }
 
     return new Response('', 500);
@@ -57,6 +57,12 @@ $app->post('/tickets/', function(Request $r) use ($app) {
 
 $app->get('/tickets/{id}', function($id) use ($app) {
     return getHackdayResponse($app['github']->getIssue($id));
+});
+
+$app->delete('/tickets/{id}', function($id) use ($app) {
+    if ($app['github']->deleteIssue($id)) {
+        return new Response('', 200);
+    }
 });
 
 $app->put('/tickets/{id}', function(Request $r, $id) use ($app) {

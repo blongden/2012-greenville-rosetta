@@ -47,4 +47,28 @@ class Issue
 
         return true;
     }
+
+    public function close(User $user, $org, $repo, $id)
+    {
+        $request = $this->http->get("/repos/{$org}/{$repo}/issues/{$id}");
+        try {
+            $response = $user->auth($request)->send();
+        } catch (\Guzzle\Http\Exception\ClientErrorResponseException $e) {
+            echo $e->getMessage();
+            return false;
+        }
+
+        $data = json_decode($response->getBody());
+        $data->state = 'closed';
+
+        $request = $this->http->patch("/repos/{$org}/{$repo}/issues/{$id}", null, json_encode($data));
+        try {
+            $response = $user->auth($request)->send();
+        } catch (\Guzzle\Http\Exception\ClientErrorResponseException $e) {
+            echo $e->getMessage();
+            return false;
+        }
+
+        return true;
+    }
 }
